@@ -5,12 +5,15 @@ import os
 import subprocess
 from unittest.mock import patch
 
-import httpx
 import pytest
+from anthropic import _base_client
 
 from claudecode.claude_api_client import ClaudeAPIClient
 from claudecode.constants import DEFAULT_CLAUDE_MODEL, PROMPT_TOKEN_LIMIT
 from claudecode.github_action_audit import initialize_findings_filter, SimpleClaudeRunner
+
+# Intercept the installed SDK's transport: newer releases use httpx2.
+httpx = getattr(_base_client, "httpx2", None) or _base_client.httpx
 
 
 @pytest.fixture
