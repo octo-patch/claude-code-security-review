@@ -185,13 +185,13 @@ class TestHelperFunctions:
             result = initialize_findings_filter()
 
             assert result == mock_filter_instance
-            assert os.environ['CLAUDE_MODEL'] == 'MiniMax-M3'
+            assert os.environ['CLAUDE_MODEL'] == 'MiniMax-M3.1-Flash'
             assert os.environ['ANTHROPIC_BASE_URL'] == 'https://api.minimaxi.com/anthropic'
             mock_filter.assert_called_once_with(
                 use_hard_exclusions=True,
                 use_claude_filtering=True,
                 api_key='test-key-123',
-                model='MiniMax-M3',
+                model='MiniMax-M3.1-Flash',
                 base_url='https://api.minimaxi.com/anthropic',
                 provider='minimax',
                 region='cn_zh',
@@ -208,10 +208,6 @@ class TestHelperFunctions:
             (
                 {'CLAUDE_PROVIDER': 'minimax', 'CLAUDE_REGION': 'unknown'},
                 'Unknown region unknown for provider minimax',
-            ),
-            (
-                {'CLAUDE_PROVIDER': 'minimax', 'CLAUDE_MODEL': 'unknown'},
-                'Model unknown is not registered for provider minimax',
             ),
         ],
     )

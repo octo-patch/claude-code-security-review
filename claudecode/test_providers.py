@@ -26,31 +26,31 @@ MINIMAX_GLOBAL_BASE_URL = "https://api.minimax.io/anthropic"
 MINIMAX_CHINA_BASE_URL = "https://api.minimaxi.com/anthropic"
 
 # Expected model identifiers registered for the provider.
-MINIMAX_MODEL_IDS = ["MiniMax-M3", "MiniMax-M2.7"]
+MINIMAX_MODEL_IDS = ["MiniMax-M3.1-Flash", "MiniMax-M3"]
 
 # Expected per-model facts sourced from the provider configuration.
 EXPECTED_MODELS = {
-    "MiniMax-M3": {
+    "MiniMax-M3.1-Flash": {
         "context_window": 1000000,
         "pricing_usd_per_million_tokens": {
-            "input": 0.6,
-            "output": 2.4,
-            "cache_read": 0.12,
+            "input": 0.15,
+            "output": 0.60,
+            "cache_read": 0.015,
             "cache_write": None,
         },
         "input_modalities": ["text", "image", "video"],
-        "thinking": ["adaptive", "disabled"],
+        "thinking": ["adaptive"],
     },
-    "MiniMax-M2.7": {
-        "context_window": 204800,
+    "MiniMax-M3": {
+        "context_window": 1000000,
         "pricing_usd_per_million_tokens": {
             "input": 0.3,
             "output": 1.2,
             "cache_read": 0.06,
-            "cache_write": 0.375,
+            "cache_write": None,
         },
-        "input_modalities": ["text"],
-        "thinking": ["always_on"],
+        "input_modalities": ["text", "image", "video"],
+        "thinking": ["adaptive", "disabled"],
     },
 }
 
@@ -68,7 +68,7 @@ class TestProviderRegistry:
         provider = get_provider("minimax")
         assert provider is not None
         assert provider["name"] == "minimax"
-        assert provider["model_id"] == "MiniMax-M3"
+        assert provider["model_id"] == "MiniMax-M3.1-Flash"
         assert provider["model_ids"] == MINIMAX_MODEL_IDS
         assert provider["reason_codes"] == {
             "provider_add": "provider-add",
@@ -122,6 +122,16 @@ class TestProviderModels:
         """Each model exposes its available thinking modes."""
         model = get_provider_model("minimax", model_id)
         assert model["thinking"] == EXPECTED_MODELS[model_id]["thinking"]
+
+    def test_flash_limits_and_m3_price_tiers(self):
+        flash = get_provider_model("minimax", "MiniMax-M3.1-Flash")
+        assert flash["max_output_tokens"] == 524288
+        m3 = get_provider_model("minimax", "MiniMax-M3")
+        assert m3["pricing_input_threshold"] == "512k"
+        assert m3["long_context_pricing_usd_per_million_tokens"] == {
+            "input": 0.6, "output": 2.4, "cache_read": 0.12, "cache_write": None,
+        }
+        assert m3["priority_price_multiplier"] == 1.5
 
     def test_get_provider_model_unknown(self):
         """Unknown model ids resolve to None."""

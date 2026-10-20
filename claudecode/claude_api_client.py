@@ -14,7 +14,7 @@ from claudecode.constants import (
 )
 from claudecode.json_parser import parse_json_with_fallbacks
 from claudecode.logger import get_logger
-from claudecode.providers import get_anthropic_base_url, get_provider, get_provider_model
+from claudecode.providers import get_anthropic_base_url, get_provider
 
 logger = get_logger(__name__)
 
@@ -55,10 +55,7 @@ class ClaudeAPIClient:
         self.model = model or (
             provider_config.get("model_id") if provider_config else DEFAULT_CLAUDE_MODEL
         )
-        if provider_config and get_provider_model(provider, self.model) is None:
-            raise ValueError(
-                f"Model {self.model} is not registered for provider {provider}"
-            )
+        # The catalog supplies defaults; explicit legacy/custom IDs pass through.
         self.timeout_seconds = timeout_seconds or DEFAULT_TIMEOUT_SECONDS
         self.max_retries = max_retries or DEFAULT_MAX_RETRIES
 
@@ -104,7 +101,8 @@ class ClaudeAPIClient:
         try:
             # Simple test call to verify API access
             self.client.messages.create(
-                model="claude-3-5-haiku-20241022",
+                model=(self.model if self.provider or self.base_url
+                       else "claude-3-5-haiku-20241022"),
                 max_tokens=10,
                 messages=[{"role": "user", "content": "Hello"}],
                 timeout=10

@@ -26,7 +26,7 @@ from claudecode.constants import (
     SUBPROCESS_TIMEOUT
 )
 from claudecode.logger import get_logger
-from claudecode.providers import get_anthropic_base_url, get_provider, get_provider_model
+from claudecode.providers import get_anthropic_base_url, get_provider
 
 logger = get_logger(__name__)
 
@@ -429,10 +429,7 @@ def initialize_findings_filter(custom_filtering_instructions: Optional[str] = No
             if model is None:
                 model = provider_config["model_id"]
                 os.environ['CLAUDE_MODEL'] = model
-            elif get_provider_model(provider, model) is None:
-                raise ValueError(
-                    f"Model {model} is not registered for provider {provider}"
-                )
+            # Preserve explicit model IDs, including legacy and custom routes.
 
             if base_url is None:
                 base_url = get_anthropic_base_url(provider, region)

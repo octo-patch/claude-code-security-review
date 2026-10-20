@@ -74,12 +74,16 @@ This action is not hardened against prompt injection attacks and should only be 
 
 The action can route Claude API calls (Claude Code and the findings filter) through an Anthropic-compatible provider endpoint. Set `claude-provider` to a registered provider name and optionally `claude-region` to select a regional endpoint, or set `claude-base-url` directly to an Anthropic-compatible base URL. Leave both empty to use the default Anthropic API.
 
-The MiniMax provider defaults to `MiniMax-M3` and supports the following model identifiers and regional Anthropic-compatible endpoints:
+The MiniMax provider defaults to `MiniMax-M3.1-Flash` and lists the following current model identifiers and regional Anthropic-compatible endpoints. Explicit `claude-model` values, including saved legacy IDs and custom proxy aliases, are passed through unchanged; availability is determined by the configured endpoint.
 
 | Model ID | Context Window | Input Modalities | Thinking |
 |----------|---------------|------------------|----------|
+| `MiniMax-M3.1-Flash` | 1000000 | text, image, video | adaptive only |
 | `MiniMax-M3` | 1000000 | text, image, video | adaptive, disabled |
-| `MiniMax-M2.7` | 204800 | text | always_on |
+
+The findings filter omits `thinking` and `output_config`, using the [Anthropic-compatible API defaults](https://platform.minimax.io/docs/api-reference/text-anthropic-api): Flash always thinks with `max` effort, while M3 defaults to thinking disabled. Flash rejects disabled thinking and `none` effort and does not support `service_tier`; the filter sends none of these overrides. The Claude Code subprocess receives the resolved model and endpoint and manages its own request options.
+
+Flash supports up to 524288 output tokens; the filter retains its existing per-request output budget. [Standard pricing](https://platform.minimax.io/docs/pricing/overview#models/text) per million input/output/cache-read tokens is $0.15/$0.60/$0.015 for Flash. M3 costs $0.30/$1.20/$0.06 for ≤512k input tokens and $0.60/$2.40/$0.12 above 512k; priority pricing is 1.5 times standard. Cache-write pricing is unspecified.
 
 | Region | Anthropic-compatible base URL |
 |--------|------------------------------|
@@ -95,7 +99,7 @@ Example using the MiniMax provider with the global endpoint:
     claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
     claude-provider: minimax
     claude-region: global_en
-    claude-model: MiniMax-M3
+    # Omit claude-model to use MiniMax-M3.1-Flash.
 ```
 
 Example using an explicit Anthropic-compatible base URL for the China endpoint:
@@ -106,7 +110,7 @@ Example using an explicit Anthropic-compatible base URL for the China endpoint:
     comment-pr: true
     claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
     claude-base-url: https://api.minimaxi.com/anthropic
-    claude-model: MiniMax-M2.7
+    claude-model: MiniMax-M3
 ```
 
 ## How It Works

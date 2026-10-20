@@ -22,7 +22,7 @@ from claudecode.constants import DEFAULT_CLAUDE_MODEL
 # used here only to verify the client forwards them correctly.
 MINIMAX_GLOBAL_BASE_URL = "https://api.minimax.io/anthropic"
 MINIMAX_CHINA_BASE_URL = "https://api.minimaxi.com/anthropic"
-MINIMAX_MODEL_IDS = ["MiniMax-M3", "MiniMax-M2.7"]
+MINIMAX_MODEL_IDS = ["MiniMax-M3.1-Flash", "MiniMax-M3", "MiniMax-M2.7", "custom-model"]
 
 
 class TestClaudeAPIClientBaseUrl:
@@ -162,7 +162,7 @@ class TestClaudeAPIClientProviderRegistry:
             provider="minimax",
         )
 
-        assert client.model == "MiniMax-M3"
+        assert client.model == "MiniMax-M3.1-Flash"
 
     @pytest.mark.parametrize(
         "kwargs,error",
@@ -171,10 +171,6 @@ class TestClaudeAPIClientProviderRegistry:
             (
                 {"provider": "minimax", "region": "unknown"},
                 "Unknown region unknown for provider minimax",
-            ),
-            (
-                {"provider": "minimax", "model": "unknown"},
-                "Model unknown is not registered for provider minimax",
             ),
         ],
     )
